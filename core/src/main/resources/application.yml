@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: core
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    #     chay server 9092
+    producer:
+      #      chuyen thanh luong byte
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      #     0: chi quan tam la co gui kafka thanh cong hay khong.
+      #     1: leader luu event nhung follower chua kip nhan =>co the mat event.
+      #     -1: event phai luu thanh cong va follower phai copy lai thanh cong thi moi duoc
+      acks: -1
+      #      acks fail thi gui lai 1 lan
+      retries: 1
+      properties:
+        #     enable.idempotence -> check trung event
+          #     chi hoat dong khi cau hinh them max.in....
+          [ enable.idempotence ]: true
+          [ max.in.flight.requests.per.connection ]: 5
+    consumer:
+      group-id: 1
