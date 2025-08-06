@@ -26,7 +26,7 @@ public class CommentEmojiServiceImpl implements CommentEmojiService {
     CommentEmojiMapper mapper;
 
     @Override
-    public CommentEmoji createEmoji(CommentEmojiRequest request, String userId) {
+    public CommentEmoji createEmoji(CommentEmojiRequest request, UUID userId) {
         CommentEmoji emoji = mapper.mapToEntity(request);
         emoji.setUserId(userId);
 
@@ -34,15 +34,15 @@ public class CommentEmojiServiceImpl implements CommentEmojiService {
     }
 
     @Override
-    public void deleteEmoji(String userId, long commentId) {
-        CommentEmoji emoji = repository.findByUserIdAndCommentId(userId, commentId).orElseThrow(
-                () -> new ResourceNotFoundException("Emoji", userId)
+    public void deleteEmoji(long commentId) {
+        CommentEmoji emoji = repository.findById(commentId).orElseThrow(
+                () -> new ResourceNotFoundException("Emoji: " + commentId)
         );
         repository.deleteById(emoji.getId());
     }
 
     @Override
-    public CommentEmoji updateEmoji(CommentEmojiRequest request, String userId) {
+    public CommentEmoji updateEmoji(CommentEmojiRequest request, UUID userId) {
         return repository.findByUserIdAndCommentId(userId, request.getCommentId())
                 .map(existingEmoji -> {
                     existingEmoji.setEmojiType(request.getEmojiType());

@@ -1,22 +1,23 @@
 package com.postservice.dto.request;
 
-import com.postservice.enums.EmojiEnum;
+import com.postservice.dto.response.UserResponse;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
-import java.util.UUID;
-
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CommentRequest {
-    UUID postId;
+@SuperBuilder
+public class CommentRequest extends UserResponse {
+    String postId;
     long parentId;
-    String userId;
     String replyUserId;
     String content;
 }

@@ -6,10 +6,10 @@ import java.util.UUID;
 
 public interface CommentEmojiService {
 
-    CommentEmoji createEmoji(CommentEmojiRequest request, String userId);
+    CommentEmoji createEmoji(CommentEmojiRequest request, UUID userId);
 
-    void deleteEmoji(String userId, long commentId);
+    void deleteEmoji(long commentId);
 
-    CommentEmoji updateEmoji(CommentEmojiRequest request, String userId);
+    CommentEmoji updateEmoji(CommentEmojiRequest request, UUID userId);
 
 }

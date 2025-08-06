@@ -1,10 +1,13 @@
 package com.core.flink;
 
+import com.core.constants.FConstants;
 import lombok.NonNull;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.JobManagerOptions;
 import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+
+import java.util.Properties;
 
 public abstract class FlinkBase {
     protected StreamExecutionEnvironment env;
@@ -33,7 +36,19 @@ public abstract class FlinkBase {
         env.setParallelism(1);
         process(jobName);
 
-        env.execute(jobName).getJobExecutionResult();
+        env.executeAsync(jobName);
+        Thread.currentThread().join();
+    }
+
+    protected Properties createKafkaProperties(String bootstrapServers, String groupId) {
+        Properties kafkaProperties = new Properties();
+        kafkaProperties.setProperty("bootstrap.servers", bootstrapServers);
+        kafkaProperties.setProperty("group.id", groupId);
+        kafkaProperties.setProperty("max.poll.interval.ms", "600000"); // tang thoi gian kafka xu ly
+        kafkaProperties.setProperty("max.poll.records", "100"); // giam so luong ban ghi xu ly 1 lan
+        kafkaProperties.setProperty("enable.auto.commit", "false"); // tắt auto commit và để Flink tự commit offset
+
+        return kafkaProperties;
     }
 
 }

@@ -42,8 +42,8 @@ public class JSONUtil {
         return null;
     }
 
-    // Convert JSON array string to List<T>
-    public static <T> T fromListJson(String json, TypeReference<T> typeRef) {
+    // Convert JSON array string to Model
+    public static <T> T fromJson(String json, TypeReference<T> typeRef) {
         if (Objects.isNull(json))
             return null;
         try {

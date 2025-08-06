@@ -44,13 +44,13 @@ public class User implements Serializable {
     @Column( nullable = false, unique = true)
     String email;
 
-    boolean gender;
+    Boolean gender;
 
     @Column(unique = true)
     String phoneNumber;
 
-    int locked = LockedEnum.NOT_LOCKED.getValue();
+    Integer locked = LockedEnum.NOT_LOCKED.getValue();
 
-    int deleted = DeletedEnum.NOT_DELETED.getValue();
+    Integer deleted = DeletedEnum.NOT_DELETED.getValue();
 
 }

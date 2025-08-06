@@ -1,5 +1,6 @@
 package com.core.config;
 
+import com.core.utils.RedisUtil;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,4 +43,10 @@ public class RedisConfig {
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory();
     }
+
+    @Bean
+    public RedisUtil redisUtil(RedisTemplate<String, Object> redisTemplate) {
+        return new RedisUtil(redisTemplate);
+    }
+
 }

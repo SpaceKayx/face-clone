@@ -25,7 +25,7 @@ public class Comment extends BaseEntity implements Serializable {
 
     UUID postId;
 
-    String userId;
+    UUID userId;
 
     String replyUserId;
 

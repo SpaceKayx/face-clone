@@ -1,5 +1,6 @@
 package com.core.config;
 
+import com.core.constants.FConstants;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,7 +15,7 @@ public class AuditorAwareConfig implements AuditorAware<String> {
     public Optional<String> getCurrentAuditor() {
         String currentUser = SecurityContextHolder.getContext().getAuthentication() != null
                 ? SecurityContextHolder.getContext().getAuthentication().getName()
-                : "anonymous"; // Đảm bảo không null
+                : FConstants.BASE_USER; // Đảm bảo không null
         return Optional.ofNullable(currentUser);
     }
 

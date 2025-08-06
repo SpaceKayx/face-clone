@@ -17,13 +17,14 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
+import java.util.UUID;
 
-@Entity
-@Table(name = "comments")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Entity
+@Table(name = "comment-emoji")
 @Builder
 public class CommentEmoji extends BaseEntity implements Serializable {
 
@@ -33,7 +34,7 @@ public class CommentEmoji extends BaseEntity implements Serializable {
 
     long commentId;
 
-    String userId;
+    UUID userId;
 
     @Enumerated(EnumType.STRING)
     EmojiEnum emojiType;

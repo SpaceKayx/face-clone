@@ -1,5 +1,6 @@
 package com.core.entities;
 
+import com.core.utils.HttpServletRequestUtil;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,13 +39,13 @@ public class BaseEntity {
     @PrePersist
     public void prePersist() {
         this.createTime = LocalDateTime.now();
-        this.createUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        this.createUser = HttpServletRequestUtil.getCurrentUserForBaseEntity();
     }
 
     @PreUpdate
     public void preUpdate() {
         this.lastModifiedDate = LocalDateTime.now();
-        this.lastModifiedByUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        this.lastModifiedByUser = HttpServletRequestUtil.getCurrentUserForBaseEntity();
     }
 }
 

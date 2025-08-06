@@ -1,5 +1,8 @@
 package com.userservice.service.impl;
 
+import com.core.constants.FConstants;
+import com.core.kafka.message.BaseMessage;
+import com.core.kafka.producer.BaseProducerHandler;
 import com.core.utils.PasswordSaltUtil;
 import com.userservice.dto.request.RegisterUserRequest;
 import com.userservice.dto.request.UpdatePasswordRequest;
@@ -37,11 +40,12 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService, UserDetailsService {
 
     UserRepository userRepository;
-    PasswordSaltUtil passwordSaltUtil;
     UserMapper userMapper;
+    PasswordSaltUtil passwordSaltUtil;
+    BaseProducerHandler kafka;
 
     @Override
-    public void register(RegisterUserRequest request) throws NoSuchAlgorithmException, DataIntegrityViolationException {
+    public void register(RegisterUserRequest request) throws DataIntegrityViolationException {
         try {
             User user = userMapper.mapToUser(request);
             String salt = passwordSaltUtil.generateSalt();
@@ -49,7 +53,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
             user.setSalt(salt);
             user.setPassword(encodedPassword); // Lưu BCrypt
-            userRepository.save(user);
+            user = userRepository.save(user);
+
+            kafka.send(BaseMessage.builder()
+                    .topic(FConstants.TOPIC_USER_CACHE)
+                    .key(user.getId().toString())
+                    .value(user)
+                    .build());
+        } catch (DataIntegrityViolationException ex) {
+            throw new DataIntegrityViolationException(ex.getMessage());
         } catch (Exception ex) {
             throw new BaseException(ErrorCode.REGISTER_ERROR);
         }
@@ -68,8 +80,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         userMapper.updateUserFromRequest(request, user);
 
-        userRepository.save(user);
-        return userMapper.mapToUserResponse(user);
+        kafka.send(BaseMessage.builder()
+                .topic(FConstants.TOPIC_USER_CACHE)
+                .key(user.getId().toString())
+                .value(user)
+                .build());
+
+        return userMapper.mapToUserResponse(userRepository.save(user));
     }
 
     @Override

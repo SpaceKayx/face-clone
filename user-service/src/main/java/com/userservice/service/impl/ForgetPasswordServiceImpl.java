@@ -25,12 +25,12 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 
-    final ForgetPasswordRepository repository;
-    final UserService userService;
-    final BaseProducerHandler kafka;
+    ForgetPasswordRepository repository;
+    UserService userService;
+    BaseProducerHandler kafka;
 
     @Override
     public void create(String email) {

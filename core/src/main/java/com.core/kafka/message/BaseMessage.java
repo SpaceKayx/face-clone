@@ -1,6 +1,7 @@
 package com.core.kafka.message;
 
 import com.core.utils.JSONUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,22 +21,25 @@ public class BaseMessage {
     private Map<String, String> headers;
 
 
-
     @SuppressWarnings("unchecked")
     public <T> T getValue(Class<T> clazz, String message) {
         try {
             if (message == null || message.isEmpty()) {
                 return clazz.getDeclaredConstructor().newInstance();
             }
-            BaseMessage baseMessage =
-                    JSONUtil.fromJson(message, BaseMessage.class);
 
-            String valueJson = JSONUtil.toJson(Objects.requireNonNull(baseMessage).getValue());
+            Map<String, Object> map = JSONUtil.fromJson(message, new TypeReference<Map<String, Object>>() {
+            });
+            if (map == null || !map.containsKey("value")) return null;
+
+            Object valueObj = map.get("value");
+            String valueJson = JSONUtil.toJson(valueObj);
+
             return JSONUtil.fromJson(valueJson, clazz);
-
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse message or instantiate class: " + clazz.getName(), e);
         }
     }
+
 
 }

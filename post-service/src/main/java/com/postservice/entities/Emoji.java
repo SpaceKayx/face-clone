@@ -24,7 +24,7 @@ public class Emoji extends BaseEntity implements Serializable {
 
     UUID postId;
 
-    String userId;
+    UUID userId;
 
     @Enumerated(EnumType.STRING)
     EmojiEnum emojiType;

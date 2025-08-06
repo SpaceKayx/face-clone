@@ -31,7 +31,7 @@ public class PostLogs extends BaseEntity implements Serializable{
     @Column(columnDefinition = "TEXT")
     String content;
 
-    String userId;
+    UUID userId;
 
     String description;
 
