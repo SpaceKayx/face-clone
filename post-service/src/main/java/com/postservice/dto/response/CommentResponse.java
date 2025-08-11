@@ -24,25 +24,18 @@ public class CommentResponse extends CommentRequest {
 
     public CommentResponse(
             long id,
-//            String postId,
             long parentId,
             String replyUserId,
             String content,
             UUID userId,
-//            String username,
             String firstName,
             String lastName
     ) {
         this.id = id;
-//        this.children = children;
-
-//        this.setPostId(postId);
         this.setParentId(parentId);
         this.setReplyUserId(replyUserId);
         this.setContent(content);
-
         this.setUserId(userId);
-//        this.setUsername(username);
         this.setFirstName(firstName);
         this.setLastName(lastName);
     }

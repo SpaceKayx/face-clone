@@ -31,7 +31,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         log.info("Do Authenticate");
         try {
             String username = authentication.getName();
-            String password = authentication.getCredentials().toString();
+            String password = authentication.getCredentials().toString().trim();
             UserDetails userDetails = userServiceImpl.loadUserByUsername(username);
             if (!(userDetails instanceof CustomUserDetail customUserDetail)) {
                 throw new AuthenticationException("UserDetails is not an instance of CustomUserDetail") {
@@ -58,5 +58,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     public boolean supports(Class<?> authentication) {
         return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
+
 }
 

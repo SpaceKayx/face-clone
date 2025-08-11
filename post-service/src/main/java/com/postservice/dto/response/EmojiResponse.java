@@ -21,7 +21,6 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EmojiResponse extends UserResponse implements Serializable {
     long id;
-    //    String postId;
     EmojiEnum emojiType;
     boolean isYourEmoji = false;
 

@@ -4,6 +4,7 @@ import com.core.constants.FConstants;
 import com.core.kafka.message.BaseMessage;
 import com.core.kafka.producer.BaseProducerHandler;
 import com.core.utils.CaptchaGenerator;
+import com.core.utils.StringUtil;
 import com.userservice.dto.request.ForgetPasswordRequest;
 import com.userservice.entities.ForgetPassword;
 import com.userservice.entities.User;
@@ -35,16 +36,15 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
     @Override
     public void create(String email) {
         User user = userService.existsEmail(email);
-        if(user.getLocked() == LockedEnum.LOCKED.getValue()){
+        if (user.getLocked() == LockedEnum.LOCKED.getValue()) {
             throw new BaseException(ErrorCode.ACCOUNT_LOCKED);
         }
-        String captcha = CaptchaGenerator.generateCaptcha();
 
         ForgetPassword forgetPassword = ForgetPassword.builder()
                 .userId(user.getId().toString())
-                .fullName(user.getFirstName() + " " + user.getLastName())
+                .fullName(StringUtil.generatedStringFormat(" ", user.getFirstName(), user.getLastName()))
                 .email(user.getEmail())
-                .verificationCode(captcha)
+                .verificationCode(CaptchaGenerator.generateCaptcha())
                 .build();
 
         kafka.send(BaseMessage.builder()
@@ -60,7 +60,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
     public void validateCaptchaAndUpdatePassword(ForgetPasswordRequest request) throws NoSuchAlgorithmException {
         User user = userService.existsEmail(request.getEmail());
 
-        ForgetPassword forgetPassword = this.getByCaptcha(request.getCaptcha(), user.getId().toString());
+        ForgetPassword forgetPassword = getByCaptcha(request.getCaptcha(), user.getId().toString());
         forgetPassword.setUsed(true);
         repository.save(forgetPassword);
 
@@ -77,8 +77,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
         return repository.findById(id);
     }
 
-    @Override
-    public ForgetPassword getByCaptcha(String captcha, String userId) {
+    private ForgetPassword getByCaptcha(String captcha, String userId) {
         ForgetPassword response = repository.findFirstByVerificationCodeAndUserIdOrderByCreatedAtDesc(captcha, userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.CAPTCHA_ERROR));
 
@@ -92,7 +91,6 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 
         return response;
     }
-
 
     @Override
     public List<ForgetPassword> getAll() {

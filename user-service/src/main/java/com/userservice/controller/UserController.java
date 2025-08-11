@@ -51,9 +51,7 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
 
-        return DataResponse.builder()
-                .data(userService.updateAccount(userDetail.getUsername(), request))
-                .build();
+        return new DataResponse(userService.updateAccount(userDetail.getUsername(), request));
     }
 
     @PutMapping("/update-password")
@@ -62,9 +60,7 @@ public class UserController {
         CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
         userService.updatePassword(userDetail.getUsername(), request);
 
-        return DataResponse.builder()
-                .message("Cập nhật mật khẩu thành công!")
-                .build();
+        return new DataResponse("Cập nhật mật khẩu thành công!");
     }
 
 }

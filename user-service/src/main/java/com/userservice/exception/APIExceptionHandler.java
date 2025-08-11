@@ -1,8 +1,10 @@
 package com.userservice.exception;
 
+import com.core.dto.response.DataResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,11 +21,41 @@ import java.sql.SQLException;
 public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
-    public ResponseEntity handleBaseException(BaseException e) {
-        return buildResponseEntity(e.getErrorCode());
+    public ResponseEntity<DataResponse> handleBaseException(BaseException ex) {
+        log.error("[BaseException] {}", ex.getMessage(), ex);
+        return buildErrorResponse(ex.getErrorCode().getStatus(), ex.getErrorCode().getMessage());
     }
 
-    // Ghi đè method từ ResponseEntityExceptionHandler (không dùng @ExceptionHandler)
+    @ExceptionHandler(NoSuchAlgorithmException.class)
+    public ResponseEntity<DataResponse> handleNoSuchAlgorithmException(NoSuchAlgorithmException ex) {
+        log.error("[NoSuchAlgorithmException] {}", ex.getMessage(), ex);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler({DataIntegrityViolationException.class, SQLException.class})
+    public ResponseEntity<DataResponse> handleDataIntegrityViolationException(Exception ex) {
+        log.error("[DataIntegrityViolationException] {}", ex.getMessage(), ex);
+        String message = ex.getMessage();
+
+        if (ex instanceof DataIntegrityViolationException) {
+            if (message.contains("(email)")) {
+                return buildErrorResponse(ErrorCode.EMAIL_UNIQUE);
+            } else if (message.contains("(username)")) {
+                return buildErrorResponse(ErrorCode.USERNAME_UNIQUE);
+            } else if (message.contains("(phone_number)")) {
+                return buildErrorResponse(ErrorCode.PHONE_UNIQUE);
+            }
+        }
+
+        return buildErrorResponse(ErrorCode.UNKNOWN_UNIQUE);
+    }
+
+    @ExceptionHandler(UniqueException.class)
+    public ResponseEntity<DataResponse> handleUniqueException(UniqueException ex) {
+        log.error("[UniqueException] {}", ex.getMessage(), ex);
+        return buildErrorResponse(ex.getErrorCode());
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
@@ -36,42 +68,24 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
                 .reduce((msg1, msg2) -> msg1 + " | " + msg2)
                 .orElse("Dữ liệu không hợp lệ");
 
-        return ResponseEntity.badRequest().body(message);
-    }
-
-    @ExceptionHandler(NoSuchAlgorithmException.class)
-    public ResponseEntity handleNoSuchAlgorithmException(NoSuchAlgorithmException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
-    }
-
-    @ExceptionHandler({DataIntegrityViolationException.class, SQLException.class})
-    public ResponseEntity handleDataIntegrityViolationException(Exception e) {
-        String message = e.getMessage();
-        log.error("Data Integrity Violation: {}", message);
-
-        if (e instanceof DataIntegrityViolationException) {
-            if (message.contains("(email)")) {
-                return buildResponseEntity(ErrorCode.EMAIL_UNIQUE);
-            } else if (message.contains("(username)")) {
-                return buildResponseEntity(ErrorCode.USERNAME_UNIQUE);
-            } else if (message.contains("(phone_number)")) {
-                return buildResponseEntity(ErrorCode.PHONE_UNIQUE);
-            }
-        }
-
-        return buildResponseEntity(ErrorCode.UNKNOWN_UNIQUE);
-    }
-
-    @ExceptionHandler(UniqueException.class)
-    public ResponseEntity handleUniqueException(UniqueException e) {
-        return buildResponseEntity(e.getErrorCode());
-    }
-
-    private ResponseEntity buildResponseEntity(ErrorCode errorCode) {
-        log.error("Error: {}", errorCode);
+        log.warn("[ValidationException] {}", message);
         return ResponseEntity
-                .status(errorCode.getCode())
-                .body(errorCode.getMessage());
+                .status(HttpStatus.BAD_REQUEST)
+                .body(DataResponse.builder()
+                        .code(HttpStatus.BAD_REQUEST)
+                        .message(message)
+                        .build());
     }
 
+    private ResponseEntity<DataResponse> buildErrorResponse(HttpStatus status, String message) {
+        return ResponseEntity.status(status)
+                .body(DataResponse.builder()
+                        .code(status)
+                        .message(message)
+                        .build());
+    }
+
+    private ResponseEntity<DataResponse> buildErrorResponse(ErrorCode errorCode) {
+        return buildErrorResponse(errorCode.getStatus(), errorCode.getMessage());
+    }
 }

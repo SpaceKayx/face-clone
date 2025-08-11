@@ -1,8 +1,6 @@
 package com.postservice.async;
 
-import com.core.constants.FConstants;
 import com.core.utils.DataCache;
-import com.core.utils.JSONUtil;
 import com.core.utils.RedisUtil;
 import com.postservice.dto.response.CommentResponse;
 import com.postservice.entities.Comment;
@@ -12,7 +10,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 

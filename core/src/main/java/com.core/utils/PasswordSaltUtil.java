@@ -49,16 +49,16 @@ public class PasswordSaltUtil {
     }
 
     /**
-     * @param rawPassword        Mật khẩu gốc người dùng vừa nhập (chưa mã hóa).
-     * @param storedSalt         Salt đã lưu trong DB, được dùng khi hash mật khẩu ban đầu.
+     * @param rawPassword          Mật khẩu gốc người dùng vừa nhập (chưa mã hóa).
+     * @param storedSalt           Salt đã lưu trong DB, được dùng khi hash mật khẩu ban đầu.
      * @param storedHashedPassword Mật khẩu đã mã hóa lưu trong DB (được hash bằng SHA-256 + salt + BCrypt).
      * @return true nếu mật khẩu đúng, false nếu sai.
      * @throws NoSuchAlgorithmException nếu thuật toán SHA-256 không được hỗ trợ (trường hợp rất hiếm).
      **/
     public boolean checkPassword(String rawPassword, String storedSalt, String storedHashedPassword) throws NoSuchAlgorithmException {
-        String hashedInput = hashPasswordWithSHA256(rawPassword, storedSalt);
-
-        return encoder.matches(hashedInput, storedHashedPassword);
+        return encoder.matches(
+                hashPasswordWithSHA256(rawPassword, storedSalt),
+                storedHashedPassword);
     }
 
 }

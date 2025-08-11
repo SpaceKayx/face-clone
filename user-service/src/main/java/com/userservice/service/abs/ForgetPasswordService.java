@@ -12,6 +12,5 @@ public interface ForgetPasswordService {
     void validateCaptchaAndUpdatePassword(ForgetPasswordRequest request) throws NoSuchAlgorithmException;
     void delete(Long id);
     Optional<ForgetPassword> getById(Long id);
-    ForgetPassword getByCaptcha(String captcha, String userId);
     List<ForgetPassword> getAll();
 }

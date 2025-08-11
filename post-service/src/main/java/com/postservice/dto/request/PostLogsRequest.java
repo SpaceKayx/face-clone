@@ -15,17 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PostLogsRequest
-{
-
+public class PostLogsRequest {
     String title;
-
     String content;
-
     String description;
-
     PrivacyEnum privacy;
-
     List<PostMediaRequest> media;
-
 }

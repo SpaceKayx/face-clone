@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,13 +26,9 @@ public class EmojiController {
 
     @PutMapping
     public DataResponse createOrUpdate(@RequestBody EmojiRequest request) {
-        return new DataResponse(emojiService.createOrUpdateEmoji(request, HttpServletRequestUtil.getCurrentUserId()));
+        emojiService.createOrUpdateEmoji(request, HttpServletRequestUtil.getCurrentUserId());
+        return new DataResponse();
     }
-
-//    @PutMapping()
-//    public DataResponse update(@RequestBody EmojiRequest request) {
-//        return new DataResponse(emojiService.updateEmoji(request, HttpServletRequestUtil.getCurrentUserId()));
-//    }
 
     @DeleteMapping("/{postId}")
     public DataResponse delete(@PathVariable UUID postId) {

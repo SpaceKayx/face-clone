@@ -37,7 +37,7 @@ public class CommentServiceImpl implements CommentService {
     public Comment updateComment(long id, CommentRequest request) {
         Comment existingComment = commentsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
-        request.setContent(request.getContent());
+        existingComment.setContent(request.getContent());
 
         return commentsRepository.save(existingComment);
     }

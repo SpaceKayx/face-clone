@@ -5,15 +5,21 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateUserRequest implements Serializable {
 
     @NotBlank(message = "Tên đăng nhập không được để trống")
@@ -39,4 +45,5 @@ public class UpdateUserRequest implements Serializable {
     @NotBlank(message = "Số điện thoại không được để trống")
     @Pattern(regexp = "^(0[0-9]{9})$", message = "Số điện thoại không hợp lệ")
     String phoneNumber;
+
 }

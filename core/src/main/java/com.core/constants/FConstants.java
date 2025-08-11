@@ -17,4 +17,7 @@ public interface FConstants {
     String TOPIC_POST_DETAIL_CACHE = "post-detail";
     String TOPIC_POST_DETAIL_CACHE_KEY = "post-detail-%s";
 
+    String TOPIC_EMOJI_CACHE = "emoji-of-user";
+    String TOPIC_EMOJI_CACHE_KEY = "emoji-of-user-%s";
+
 }

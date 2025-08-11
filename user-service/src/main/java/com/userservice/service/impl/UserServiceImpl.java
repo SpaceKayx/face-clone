@@ -55,11 +55,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             user.setPassword(encodedPassword); // Lưu BCrypt
             user = userRepository.save(user);
 
-            kafka.send(BaseMessage.builder()
-                    .topic(FConstants.TOPIC_USER_CACHE)
-                    .key(user.getId().toString())
-                    .value(user)
-                    .build());
+            this.sendMessageToKafka(user.getId().toString(), user);
         } catch (DataIntegrityViolationException ex) {
             throw new DataIntegrityViolationException(ex.getMessage());
         } catch (Exception ex) {
@@ -80,11 +76,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         userMapper.updateUserFromRequest(request, user);
 
-        kafka.send(BaseMessage.builder()
-                .topic(FConstants.TOPIC_USER_CACHE)
-                .key(user.getId().toString())
-                .value(user)
-                .build());
+        this.sendMessageToKafka(user.getId().toString(), user);
 
         return userMapper.mapToUserResponse(userRepository.save(user));
     }
@@ -114,6 +106,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         } catch (NoSuchAlgorithmException e) {
             throw new BaseException(ErrorCode.PASSWORD_ERROR);
         }
+
         userRepository.save(user);
     }
 
@@ -156,6 +149,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.EMAIL_NOTFOUND.getMessage()));
 
         return new CustomUserDetail(user);
+    }
+
+    private void sendMessageToKafka(String key, User user) {
+        kafka.send(BaseMessage.builder()
+                .topic(FConstants.TOPIC_USER_CACHE)
+                .key(key)
+                .value(user)
+                .build());
     }
 
 }

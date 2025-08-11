@@ -3,7 +3,6 @@ package com.core.utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
@@ -37,6 +36,15 @@ public class RedisUtil {
         }
     }
 
+    @Async
+    public void setDataToRedisDefaultOneWeek(String key, Object value) {
+        String json = JSONUtil.toJson(value);
+        if (json != null) {
+            redisTemplate.opsForValue().set(key, json, Duration.ofDays(7));
+        }
+    }
+
+    @Async
     public void deleteDataFromRedis(String key) {
         redisTemplate.delete(key);
     }

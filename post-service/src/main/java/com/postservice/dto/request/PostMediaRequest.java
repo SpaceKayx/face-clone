@@ -12,10 +12,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PostMediaRequest {
-
     String mediaName;
-
     String mediaUrl;
-
     MediaEnum mediaType;
 }

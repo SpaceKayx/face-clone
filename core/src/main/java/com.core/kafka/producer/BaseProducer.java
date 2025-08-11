@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public abstract class BaseProducer <T extends BaseMessage> {
+public abstract class BaseProducer<T extends BaseMessage> {
     private final KafkaTemplate<String, T> kafkaTemplate;
 
     public void send(T event) {
@@ -33,19 +33,19 @@ public abstract class BaseProducer <T extends BaseMessage> {
 
     private ProducerRecord createRecord(T event) {
         List<Header> headers = this.createHeader(event.getHeaders());
-        return new ProducerRecord(event.getTopic(), null, event.getKey(), JSONUtil.toJson(event), headers);
+        return new ProducerRecord(event.getTopic(), event.getPartition(), event.getKey(), JSONUtil.toJson(event), headers);
     }
 
     private List<Header> createHeader(Map<String, String> headers) {
-        if(Objects.isNull(headers)) {
+        if (Objects.isNull(headers)) {
             return Collections.emptyList();
         }
         return headers.entrySet().stream().map(header ->
-                new RecordHeader(header.getKey(), header.getValue().getBytes()))
+                        new RecordHeader(header.getKey(), header.getValue().getBytes()))
                 .collect(Collectors.toList());
     }
 
-    private void handleCompletion(SendResult<String,T> stringTSendResult, Throwable throwable) {
+    private void handleCompletion(SendResult<String, T> stringTSendResult, Throwable throwable) {
         if (throwable != null) {
             handleSendFailure(throwable);
         } else {
@@ -62,8 +62,8 @@ public abstract class BaseProducer <T extends BaseMessage> {
     }
 
     @PreDestroy
-    protected void close(){
-        if(kafkaTemplate != null){
+    protected void close() {
+        if (kafkaTemplate != null) {
             kafkaTemplate.destroy();
         }
     }

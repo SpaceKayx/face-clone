@@ -18,6 +18,7 @@ public class BaseMessage {
     private String topic;
     private String key;
     private Object value;
+    private Integer partition;
     private Map<String, String> headers;
 
 
@@ -32,8 +33,7 @@ public class BaseMessage {
             });
             if (map == null || !map.containsKey("value")) return null;
 
-            Object valueObj = map.get("value");
-            String valueJson = JSONUtil.toJson(valueObj);
+            String valueJson = JSONUtil.toJson(map.get("value"));
 
             return JSONUtil.fromJson(valueJson, clazz);
         } catch (Exception e) {

@@ -2,14 +2,22 @@ package com.userservice.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+
+import java.io.Serializable;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class UpdatePasswordRequest {
+@Getter
+@Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class UpdatePasswordRequest implements Serializable {
 
     @NotBlank(message = "Mật khẩu không được để trống")
     @Size(min = 6, message = "Mật khẩu phải có ít nhất 6 ký tự")

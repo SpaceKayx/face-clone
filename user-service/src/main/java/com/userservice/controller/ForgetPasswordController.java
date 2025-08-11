@@ -19,18 +19,14 @@ public class ForgetPasswordController {
     public DataResponse checkEmailAndSendCaptcha(@RequestParam String email) {
         forgetPasswordService.create(email);
 
-        return DataResponse.builder()
-                .message("Mã xác thực đã được gửi qua email!")
-                .build();
+        return new DataResponse("Mã xác thực đã được gửi qua email!");
     }
 
     @PutMapping
     public DataResponse validateCaptchaAndUpdatePassword(@RequestBody ForgetPasswordRequest request) throws NoSuchAlgorithmException {
         forgetPasswordService.validateCaptchaAndUpdatePassword(request);
 
-        return DataResponse.builder()
-                .message("Đổi mật khẩu người dùng thành công!")
-                .build();
+        return new DataResponse("Đổi mật khẩu người dùng thành công!");
     }
 
 }

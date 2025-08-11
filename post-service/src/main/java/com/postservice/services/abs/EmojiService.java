@@ -8,11 +8,9 @@ import java.util.UUID;
 
 public interface EmojiService {
 
-    Emoji createOrUpdateEmoji(EmojiRequest request, UUID userId);
+    void createOrUpdateEmoji(EmojiRequest request, UUID userId);
 
     void deleteEmoji(UUID postId, UUID userId);
-
-    Emoji createEmoji(EmojiRequest request, UUID userId);
 
     List<EmojiResponse> findAllByPostId(UUID postId);
 

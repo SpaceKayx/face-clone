@@ -1,5 +1,6 @@
 package com.core.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DataResponse {
     HttpStatus code = HttpStatus.OK;
     String message = "Thao tác thành công!";
@@ -25,6 +27,13 @@ public class DataResponse {
         this.code = HttpStatus.OK;
         this.data = data;
         this.message = "Thao tác thành công!";
+        this.responseTime = LocalDateTime.now();
+    }
+
+    public DataResponse(String message) {
+        this.code = HttpStatus.OK;
+        this.data = null;
+        this.message = message;
         this.responseTime = LocalDateTime.now();
     }
 

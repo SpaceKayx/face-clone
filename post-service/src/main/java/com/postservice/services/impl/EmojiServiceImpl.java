@@ -1,5 +1,9 @@
 package com.postservice.services.impl;
 
+import com.core.constants.FConstants;
+import com.core.kafka.message.BaseMessage;
+import com.core.kafka.producer.BaseProducerHandler;
+import com.core.utils.RedisUtil;
 import com.postservice.dto.request.EmojiRequest;
 import com.postservice.dto.response.EmojiResponse;
 import com.postservice.entities.Emoji;
@@ -11,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,14 +28,8 @@ public class EmojiServiceImpl implements EmojiService {
 
     EmojiRepository emojiRepository;
     EmojiMapper emojiMapper;
-
-    @Override
-    public Emoji createEmoji(EmojiRequest request, UUID userId) {
-        Emoji emoji = emojiMapper.mapToEntity(request);
-        emoji.setUserId(userId);
-
-        return emojiRepository.save(emoji);
-    }
+    BaseProducerHandler kafka;
+    RedisUtil redisUtil;
 
     @Override
     public void deleteEmoji(UUID postId, UUID userId) {
@@ -40,13 +40,21 @@ public class EmojiServiceImpl implements EmojiService {
     }
 
     @Override
-    public Emoji createOrUpdateEmoji(EmojiRequest request, UUID userId) {
-        return emojiRepository.findByUserIdAndPostId(userId, request.getPostId())
-                .map(existingEmoji -> {
-                    existingEmoji.setEmojiType(request.getEmojiType());
-                    return emojiRepository.save(existingEmoji);
-                })
-                .orElseGet(() -> this.createEmoji(request, userId));
+    @Transactional
+    public void createOrUpdateEmoji(EmojiRequest request, UUID userId) {
+        Emoji emoji = emojiMapper.mapToEntity(request);
+        emoji.setUserId(userId);
+
+        kafka.send(BaseMessage.builder()
+                .topic(FConstants.TOPIC_EMOJI_CACHE)
+                .key(emoji.getUserId().toString())
+                .value(emoji)
+                .build());
+
+        redisUtil.setDataToRedis(
+                String.format(FConstants.TOPIC_EMOJI_CACHE_KEY, emoji.getUserId().toString()),
+                emoji,
+                Duration.ofDays(7));
     }
 
     @Override
