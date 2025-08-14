@@ -2,6 +2,7 @@ package com.postservice.repositories;
 
 import com.postservice.dto.response.CommentResponse;
 import com.postservice.entities.Comment;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -21,4 +22,14 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             WHERE c.postId = :postId
             """)
     List<CommentResponse> findAllCommentByPostId(UUID postId);
+
+    @Query("""
+            SELECT new com.postservice.dto.response.CommentResponse(c.id, c.parentId, c.replyUserId, c.content,u.id, u.firstName, u.lastName)
+            FROM Comment c
+            INNER JOIN UserCache u
+                ON c.userId = u.id
+            WHERE c.postId IN :postIds
+            """)
+    List<CommentResponse> findAllCommentByPostIds(List<UUID> postIds, Pageable pageable);
+
 }

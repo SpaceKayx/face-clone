@@ -5,6 +5,7 @@ import com.postservice.dto.response.CommentResponse;
 import com.postservice.entities.Comment;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface CommentService {
@@ -15,6 +16,6 @@ public interface CommentService {
 
     Comment updateComment(long id, CommentRequest request);
 
-    List<CommentResponse> getCommentByPostId(UUID postId);
+    Map<UUID, List<CommentResponse>> getCommentsByPostIds(List<UUID> postIds);
 
 }

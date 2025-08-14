@@ -14,6 +14,9 @@ public interface FConstants {
     String TOPIC_COMMENT_DETAIL_CACHE = "comment-detail";
     String TOPIC_COMMENT_DETAIL_CACHE_KEY = "comment-detail-%s";
 
+    String TOPIC_POST_OF_USER_CACHE = "post-of-user";
+    String TOPIC_POST_OF_USER_CACHE_KEY = "post-of-user-%s";
+
     String TOPIC_POST_DETAIL_CACHE = "post-detail";
     String TOPIC_POST_DETAIL_CACHE_KEY = "post-detail-%s";
 

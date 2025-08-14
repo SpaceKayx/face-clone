@@ -25,7 +25,7 @@ public class CommentResponse extends CommentRequest {
     public CommentResponse(
             long id,
             long parentId,
-            String replyUserId,
+            UUID replyUserId,
             String content,
             UUID userId,
             String firstName,

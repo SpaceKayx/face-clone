@@ -24,7 +24,6 @@ import java.security.NoSuchAlgorithmException;
 public class CustomAuthenticationProvider implements AuthenticationProvider {
     // custom login
     UserServiceImpl userServiceImpl;
-    PasswordSaltUtil passwordSaltUtil;
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -38,7 +37,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 };
             }
 
-            if (!passwordSaltUtil.checkPassword(password, customUserDetail.getSalt(), userDetails.getPassword().trim())) {
+            if (!PasswordSaltUtil.checkPassword(password, customUserDetail.getSalt(), userDetails.getPassword().trim())) {
                 throw new BaseException(ErrorCode.LOGIN_ERROR);
             } else if (customUserDetail.isEnabled()) {
                 throw new BaseException(ErrorCode.ACCOUNT_LOCKED);

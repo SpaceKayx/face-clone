@@ -20,7 +20,7 @@ public class RedisConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(30))  // Thời gian hết hạn cache
+                .entryTtl(Duration.ofDays(7))  // Thời gian hết hạn cache
                 .disableCachingNullValues();  // Không cache giá trị null
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(config)

@@ -4,6 +4,7 @@ import com.postservice.dto.response.EmojiResponse;
 import com.postservice.entities.Emoji;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface EmojiService {
@@ -12,6 +13,6 @@ public interface EmojiService {
 
     void deleteEmoji(UUID postId, UUID userId);
 
-    List<EmojiResponse> findAllByPostId(UUID postId);
+    Map<UUID, List<EmojiResponse>> findAllByPostIds(List<UUID> postIds);
 
 }

@@ -1,5 +1,6 @@
 package com.postservice.services.abs;
 
+import com.core.dto.response.PageableRequest;
 import com.postservice.dto.request.PostLogsRequest;
 import com.postservice.dto.response.PostLogsResponse;
 import com.postservice.entities.PostLogs;
@@ -18,6 +19,6 @@ public interface PostLogsService {
 
     List<PostLogs> getAllPosts();
 
-    List<PostLogs> findAllByUserId(UUID userId);
+    List<PostLogsResponse> findAllByUserId(UUID userId, PageableRequest request);
 
 }

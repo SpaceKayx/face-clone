@@ -8,12 +8,16 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/comment")
@@ -42,6 +46,13 @@ public class CommentController {
         return DataResponse.builder()
                 .message("Xóa thành công!")
                 .build();
+    }
+
+    @GetMapping("/more-comment/{postId}")
+    public DataResponse moreComment(@PathVariable UUID postId) {
+        return new DataResponse(
+                commentService.getCommentsByPostIds(List.of(postId))
+                        .get(postId));
     }
 
 }

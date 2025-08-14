@@ -1,6 +1,7 @@
 package com.postservice.controllers;
 
 import com.core.dto.response.DataResponse;
+import com.core.dto.response.PageableRequest;
 import com.core.utils.HttpServletRequestUtil;
 import com.postservice.dto.request.PostLogsRequest;
 import com.postservice.dto.response.PostLogsResponse;
@@ -54,8 +55,8 @@ public class PostLogsController {
     }
     
     @GetMapping("/user/{userId}")
-    public DataResponse getAllPostsByUserId(@PathVariable UUID userId) {
-        List<PostLogs> posts = postLogsService.findAllByUserId(userId);
+    public DataResponse getAllPostsByUserId(@PathVariable UUID userId, @RequestParam PageableRequest request) {
+        List<PostLogsResponse> posts = postLogsService.findAllByUserId(userId, request);
 
         return new DataResponse(posts != null ? posts : new ArrayList<>());
     }

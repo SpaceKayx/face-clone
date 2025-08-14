@@ -22,6 +22,8 @@ public class UserCacheServiceImpl implements UserCacheService {
 
     @Override
     public UserCache getUserCacheById(UUID id) {
+        if (id == null) return null;
+
         UserCache user = redisUtil.getDataFromRedis(
                 DataCache.getUserKeyInRedis(id),
                 UserCache.class);

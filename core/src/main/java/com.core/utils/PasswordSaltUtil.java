@@ -18,10 +18,10 @@ import java.util.Base64;
 @Slf4j
 public class PasswordSaltUtil {
 
-    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    static BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     // Tạo salt ngẫu nhiên
-    public String generateSalt() {
+    public static String generateSalt() {
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[16]; // 128-bit
         random.nextBytes(salt);
@@ -31,7 +31,7 @@ public class PasswordSaltUtil {
     }
 
     // Băm SHA-256(password + salt)
-    public String hashPasswordWithSHA256(String password, String salt) throws NoSuchAlgorithmException {
+    public static String hashPasswordWithSHA256(String password, String salt) throws NoSuchAlgorithmException {
         String combined = password + salt;
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hash = digest.digest(combined.getBytes());
@@ -41,7 +41,7 @@ public class PasswordSaltUtil {
     }
 
     // Mã hóa bằng BCrypt(SHA256(password + salt))
-    public String encodeWithBCrypt(String rawPassword, String salt) throws NoSuchAlgorithmException {
+    public static String encodeWithBCrypt(String rawPassword, String salt) throws NoSuchAlgorithmException {
         String sha256 = hashPasswordWithSHA256(rawPassword, salt);
         String bcrypt = encoder.encode(sha256);
         log.debug("BCrypt(SHA256(password + salt)) = {}", bcrypt);
@@ -55,7 +55,7 @@ public class PasswordSaltUtil {
      * @return true nếu mật khẩu đúng, false nếu sai.
      * @throws NoSuchAlgorithmException nếu thuật toán SHA-256 không được hỗ trợ (trường hợp rất hiếm).
      **/
-    public boolean checkPassword(String rawPassword, String storedSalt, String storedHashedPassword) throws NoSuchAlgorithmException {
+    public static boolean checkPassword(String rawPassword, String storedSalt, String storedHashedPassword) throws NoSuchAlgorithmException {
         return encoder.matches(
                 hashPasswordWithSHA256(rawPassword, storedSalt),
                 storedHashedPassword);

@@ -1,6 +1,7 @@
 package com.postservice.services.impl;
 
 import com.core.constants.FConstants;
+import com.core.dto.response.PageableRequest;
 import com.core.kafka.message.BaseMessage;
 import com.core.kafka.producer.BaseProducerHandler;
 import com.core.utils.RedisUtil;
@@ -14,12 +15,16 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,10 +38,15 @@ public class EmojiServiceImpl implements EmojiService {
 
     @Override
     public void deleteEmoji(UUID postId, UUID userId) {
-        Emoji emoji = emojiRepository.findByUserIdAndPostId(userId, postId).orElseThrow(
-                () -> new ResourceNotFoundException("Emoji" + userId)
-        );
-        emojiRepository.deleteById(emoji.getId());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Emoji emoji = emojiRepository.findByUserIdAndPostId(userId, postId).orElseThrow(
+                        () -> new ResourceNotFoundException("Emoji" + userId)
+                );
+                emojiRepository.deleteById(emoji.getId());
+            }
+        }).start();
     }
 
     @Override
@@ -58,8 +68,20 @@ public class EmojiServiceImpl implements EmojiService {
     }
 
     @Override
-    public List<EmojiResponse> findAllByPostId(UUID postId) {
-        return emojiRepository.findAllEmojiPostId(postId).orElse(List.of());
+    public Map<UUID, List<EmojiResponse>> findAllByPostIds(List<UUID> postIds) {
+        if (postIds == null || postIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<EmojiResponse> allEmojis = emojiRepository.findAllEmojiByPostIds(
+                postIds,
+                new PageableRequest(0, 50, "createTime", Sort.Direction.DESC).getPageableRequest());
+        if (allEmojis.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return allEmojis.stream()
+                .collect(Collectors.groupingBy(EmojiResponse::getPostId));
     }
 
 }

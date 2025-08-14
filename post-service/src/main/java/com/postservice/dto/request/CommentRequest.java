@@ -9,6 +9,8 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -16,8 +18,8 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 public class CommentRequest extends UserResponse {
-    String postId;
+    UUID postId;
     long parentId;
-    String replyUserId;
+    UUID replyUserId;
     String content;
 }

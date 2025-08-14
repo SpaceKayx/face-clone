@@ -1,11 +1,15 @@
 package com.postservice.services.impl;
 
+import com.core.dto.response.PageableRequest;
 import com.core.utils.DataCache;
 import com.core.utils.RedisUtil;
-import com.postservice.async.SyncPostCache;
+import com.core.utils.StringUtil;
 import com.postservice.dto.request.PostLogsRequest;
+import com.postservice.dto.response.CommentResponse;
+import com.postservice.dto.response.EmojiResponse;
 import com.postservice.dto.response.PostLogsResponse;
 import com.postservice.entities.PostLogs;
+import com.postservice.entities.UserCache;
 import com.postservice.exception.BaseException;
 import com.postservice.exception.ErrorCode;
 import com.postservice.mapper.PostLogsMapper;
@@ -13,13 +17,14 @@ import com.postservice.repositories.PostLogsRepository;
 import com.postservice.services.abs.CommentService;
 import com.postservice.services.abs.EmojiService;
 import com.postservice.services.abs.PostLogsService;
+import com.postservice.services.abs.UserCacheService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,20 +34,21 @@ public class PostLogsServiceImpl implements PostLogsService {
     PostLogsRepository postLogsRepository;
     PostLogsMapper postLogsMapper;
     RedisUtil redisUtil;
-//    UserCacheService userCacheService;
     CommentService commentsService;
     EmojiService emojiService;
-    SyncPostCache syncPostCache;
+    UserCacheService userCacheService;
 
     @Override
     public PostLogs createPost(PostLogsRequest request, UUID userId) {
-        PostLogs postLogs = postLogsMapper.mapToEntity(request);
-        postLogs.setUserId(userId);
+        PostLogs entity = postLogsMapper.mapToEntity(request);
+        entity.setUserId(userId);
 
-        PostLogs response = postLogsRepository.save(postLogs);
-        syncPostCache.createPostInRedis(response);
+        entity = postLogsRepository.save(entity);
 
-        return response;
+        redisUtil.setDataToRedis(getKeyInRedis(entity.getId()), entity);
+        redisUtil.setDataToRedisWithRealTime(DataCache.getPostOfUserKeyInRedis(userId), entity.getId());
+
+        return entity;
     }
 
     @Override
@@ -51,10 +57,8 @@ public class PostLogsServiceImpl implements PostLogsService {
                 .orElseThrow(() -> new BaseException(ErrorCode.POST_NOTFOUND));
 
         postLogsMapper.updatePostLogsFromRequest(request, existingPost);
-        existingPost.setId(existingPost.getId());
 
-        syncPostCache.createPostInRedis(existingPost);
-
+        redisUtil.setDataToRedis(getKeyInRedis(existingPost.getId()), existingPost);
         return postLogsRepository.save(existingPost);
     }
 
@@ -64,23 +68,28 @@ public class PostLogsServiceImpl implements PostLogsService {
                 .orElseThrow(() -> new BaseException(ErrorCode.POST_NOTFOUND));
         postLogs.setDeleted(true);
 
-        redisUtil.deleteDataFromRedis(DataCache.getPostKeyInRedis(id));
+        redisUtil.deleteDataFromRedis(getKeyInRedis(id));
         postLogsRepository.save(postLogs);
     }
 
     @Override
     public PostLogsResponse getPostById(UUID id) {
-        PostLogsResponse response = redisUtil.getDataFromRedis(
-                DataCache.getPostKeyInRedis(id),
-                PostLogsResponse.class
-        );
+        PostLogsResponse response = redisUtil.getDataFromRedis(getKeyInRedis(id), PostLogsResponse.class);
 
         if (response == null) {
             response = postLogsRepository.findByPostId(id)
                     .orElseThrow(() -> new BaseException(ErrorCode.POST_NOTFOUND));
         }
-        response.setComments(commentsService.getCommentByPostId(id));
-        response.setEmojis(emojiService.findAllByPostId(id));
+
+        UserCache user = userCacheService.getUserCacheById(response.getUserId());
+        if (user != null) {
+            response.setFirstName(user.getFirstName());
+            response.setLastName(user.getLastName());
+            response.setUsername(user.getUsername());
+        }
+
+        response.setComments(commentsService.getCommentsByPostIds(List.of(id)).getOrDefault(id, Collections.emptyList()));
+        response.setEmojis(emojiService.findAllByPostIds(List.of(id)).getOrDefault(id, Collections.emptyList()));
 
         return response;
     }
@@ -91,7 +100,44 @@ public class PostLogsServiceImpl implements PostLogsService {
     }
 
     @Override
-    public List<PostLogs> findAllByUserId(UUID userId) {
-        return postLogsRepository.findAllByUserId(userId);
+    public List<PostLogsResponse> findAllByUserId(UUID userId, PageableRequest request) {
+        UserCache user = userCacheService.getUserCacheById(userId);
+        if (user == null) return Collections.emptyList();
+
+        List<PostLogsResponse> responses;
+        List<UUID> postIds = redisUtil.getKeysFromZSet(
+                DataCache.getPostOfUserKeyInRedis(userId),
+                request.getPage(),
+                request.getSize(),
+                UUID::fromString
+        );
+
+        if (postIds.isEmpty()) {
+            responses = postLogsRepository.findAllByUserId(userId, request.getPageableRequest());
+        } else {
+            responses = redisUtil.multiGetFromRedis(
+                    StringUtil.convertCollectionElements(postIds, String.class),
+                    PostLogsResponse.class);
+        }
+
+        if (responses.isEmpty()) return responses;
+
+        Map<UUID, List<CommentResponse>> commentMap = commentsService.getCommentsByPostIds(postIds);
+        Map<UUID, List<EmojiResponse>> emojiMap = emojiService.findAllByPostIds(postIds);
+
+        for (PostLogsResponse post : responses) {
+            post.setFirstName(user.getFirstName());
+            post.setLastName(user.getLastName());
+            post.setUsername(user.getUsername());
+            post.setComments(commentMap.getOrDefault(post.getId(), Collections.emptyList()));
+            post.setEmojis(emojiMap.getOrDefault(post.getId(), Collections.emptyList()));
+        }
+
+        return responses;
     }
+
+    private String getKeyInRedis(UUID key) {
+        return DataCache.getPostKeyInRedis(key);
+    }
+
 }

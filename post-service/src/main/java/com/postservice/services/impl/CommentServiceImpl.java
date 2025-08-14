@@ -1,5 +1,6 @@
 package com.postservice.services.impl;
 
+import com.core.dto.response.PageableRequest;
 import com.postservice.dto.request.CommentRequest;
 import com.postservice.dto.response.CommentResponse;
 import com.postservice.entities.Comment;
@@ -9,11 +10,16 @@ import com.postservice.services.abs.CommentService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,30 +49,45 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentResponse> getCommentByPostId(UUID postId) {
-        List<CommentResponse> comments = commentsRepository.findAllCommentByPostId(postId);
-        List<CommentResponse> response = new ArrayList<>();
+    public Map<UUID, List<CommentResponse>> getCommentsByPostIds(List<UUID> postIds) {
+        if (postIds == null || postIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
 
+        List<CommentResponse> allComments = commentsRepository.findAllCommentByPostIds(
+                postIds,
+                new PageableRequest(0, 50, "createTime", Sort.Direction.DESC).getPageableRequest());
+        if (allComments.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<UUID, List<CommentResponse>> grouped = new HashMap<>();
+        for (CommentResponse allComment : allComments) {
+            grouped.computeIfAbsent(allComment.getPostId(), k -> new ArrayList<>()).add(allComment);
+        }
+
+        grouped.replaceAll((postId, comments) -> buildCommentTree(comments));
+
+        return grouped;
+    }
+
+    private List<CommentResponse> buildCommentTree(List<CommentResponse> comments) {
+        Map<Long, CommentResponse> commentById = comments.stream()
+                .collect(Collectors.toMap(CommentResponse::getId, c -> c));
+
+        List<CommentResponse> roots = new ArrayList<>();
         for (CommentResponse comment : comments) {
             if (comment.getParentId() == 0) {
-                comment.setChildren(buildChildren(comment, comments));
-                response.add(comment);
+                roots.add(comment);
+            } else {
+                CommentResponse parent = commentById.get(comment.getParentId());
+                if (parent != null) {
+                    parent.getChildren().add(comment);
+                }
             }
         }
-        return response;
+        return roots;
     }
 
-    private List<CommentResponse> buildChildren(CommentResponse currentElement, List<CommentResponse> lists) {
-        List<CommentResponse> response = new ArrayList<>();
-
-        for (CommentResponse comment : lists) {
-            if (comment.getParentId() == currentElement.getId()) {
-                comment.setChildren(buildChildren(comment, lists));
-                response.add(comment);
-            }
-        }
-
-        return response;
-    }
 
 }

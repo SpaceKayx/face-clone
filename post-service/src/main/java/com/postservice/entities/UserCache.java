@@ -24,7 +24,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-//@SQLRestriction("deleted = 0")
+@SQLRestriction("deleted = 0")
 public class UserCache extends BaseEntity implements Serializable {
 
     @Id

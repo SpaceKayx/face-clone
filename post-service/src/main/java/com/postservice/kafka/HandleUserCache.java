@@ -4,7 +4,6 @@ import com.core.constants.FConstants;
 import com.core.kafka.BaseKafkaHandler;
 import com.core.utils.DataCache;
 import com.core.utils.RedisUtil;
-import com.postservice.async.SyncPostCache;
 import com.postservice.entities.UserCache;
 import com.postservice.repositories.UserCacheRepository;
 import lombok.AccessLevel;
@@ -22,7 +21,6 @@ public class HandleUserCache extends BaseKafkaHandler<UserCache> {
 
     RedisUtil redisUtil;
     UserCacheRepository userCacheRepository;
-    SyncPostCache syncPostCache;
 
     @KafkaListener(topics = FConstants.TOPIC_USER_CACHE,
             groupId = FConstants.GROUP_ID_DEFAULT)
@@ -38,6 +36,5 @@ public class HandleUserCache extends BaseKafkaHandler<UserCache> {
                 message
         );
 
-        syncPostCache.updatePostInRedis(message);
     }
 }

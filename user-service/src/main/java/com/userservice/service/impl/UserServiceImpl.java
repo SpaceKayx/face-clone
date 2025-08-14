@@ -41,15 +41,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     UserRepository userRepository;
     UserMapper userMapper;
-    PasswordSaltUtil passwordSaltUtil;
     BaseProducerHandler kafka;
 
     @Override
     public void register(RegisterUserRequest request) throws DataIntegrityViolationException {
         try {
             User user = userMapper.mapToUser(request);
-            String salt = passwordSaltUtil.generateSalt();
-            String encodedPassword = passwordSaltUtil.encodeWithBCrypt(user.getPassword(), salt); // SHA256 + BCrypt
+            String salt = PasswordSaltUtil.generateSalt();
+            String encodedPassword = PasswordSaltUtil.encodeWithBCrypt(user.getPassword(), salt); // SHA256 + BCrypt
 
             user.setSalt(salt);
             user.setPassword(encodedPassword); // Lưu BCrypt
@@ -85,9 +84,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public void updatePassword(String username, UpdatePasswordRequest request) throws NoSuchAlgorithmException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BaseException(ErrorCode.ACCOUNT_NOTFOUND));
-        if (passwordSaltUtil.checkPassword(request.getOldPassword(), user.getSalt(), user.getPassword())) {
+        if (PasswordSaltUtil.checkPassword(request.getOldPassword(), user.getSalt(), user.getPassword())) {
             try {
-                String hashedPassword = passwordSaltUtil.encodeWithBCrypt(request.getNewPassword(), user.getSalt());
+                String hashedPassword = PasswordSaltUtil.encodeWithBCrypt(request.getNewPassword(), user.getSalt());
                 user.setPassword(hashedPassword);
             } catch (NoSuchAlgorithmException e) {
                 throw new BaseException(ErrorCode.PASSWORD_ERROR);
@@ -101,7 +100,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public void forgetPassword(User user, String newPassword) throws NoSuchAlgorithmException {
         try {
-            String hashedPassword = passwordSaltUtil.encodeWithBCrypt(newPassword, user.getSalt());
+            String hashedPassword = PasswordSaltUtil.encodeWithBCrypt(newPassword, user.getSalt());
             user.setPassword(hashedPassword);
         } catch (NoSuchAlgorithmException e) {
             throw new BaseException(ErrorCode.PASSWORD_ERROR);
@@ -117,6 +116,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setDeleted(DeletedEnum.DELETED.getValue());
 
         userRepository.save(user);
+        this.sendMessageToKafka(user.getId().toString(), user);
     }
 
     @Override
@@ -126,6 +126,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setLocked(LockedEnum.LOCKED.getValue());
 
         userRepository.save(user);
+        this.sendMessageToKafka(user.getId().toString(), user);
     }
 
     @Override

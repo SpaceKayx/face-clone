@@ -20,4 +20,8 @@ public class DataCache {
         return String.format(FConstants.TOPIC_USER_CACHE_KEY, key);
     }
 
+    public static String getPostOfUserKeyInRedis(UUID userId) {
+        return String.format(FConstants.TOPIC_POST_OF_USER_CACHE_KEY, userId);
+    }
+
 }

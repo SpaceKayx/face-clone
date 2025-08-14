@@ -22,12 +22,14 @@ import java.util.UUID;
 public class EmojiResponse extends UserResponse implements Serializable {
     long id;
     EmojiEnum emojiType;
+    UUID postId;
     boolean isYourEmoji = false;
 
-    public EmojiResponse(long id, EmojiEnum emojiType, UUID userId, String firstName, String lastName) {
+    public EmojiResponse(long id, EmojiEnum emojiType, UUID userId, UUID postId, String firstName, String lastName) {
         this.id = id;
         this.emojiType = emojiType;
         this.userId = userId;
+        this.postId = postId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.isYourEmoji = userId.equals(HttpServletRequestUtil.getCurrentUserId());
