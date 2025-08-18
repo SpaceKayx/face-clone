@@ -15,6 +15,10 @@ public class RedisUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
+    /**
+     * -------------------- Value --------------------
+     */
+
     public <T> T getDataFromRedis(String key, Class<T> clazz) {
         Object json = redisTemplate.opsForValue().get(key);
         if (json instanceof String str) {
@@ -23,7 +27,6 @@ public class RedisUtil {
         return null;
     }
 
-    // Set dữ liệu vào Redis có thời hạn (Duration.ofMinutes(10))
     @Async
     public void setDataToRedis(String key, Object value, Duration ttl) {
         String json = JSONUtil.toJson(value);
@@ -40,37 +43,42 @@ public class RedisUtil {
         }
     }
 
+    /**
+     * -------------------- ZSet --------------------
+     */
+
+    // add id vào ZSet, score = timestamp
     @Async
-    public void setDataToRedisWithRealTime(String key, Object value) {
-        if (Objects.isNull(value)) return;
-
-        redisTemplate.opsForZSet().add(
-                key,
-                Objects.requireNonNull(JSONUtil.toJson(value)),
-                System.currentTimeMillis());
+    public void addToZSet(String key, Object id) {
+        if (Objects.isNull(id)) return;
+        redisTemplate.opsForZSet().add(key, id.toString(), System.currentTimeMillis());
     }
 
-    public <T> List<T> getDataFromRedis(String key, long start, long end, Class<T> clazz) {
-        Set<Object> raw = redisTemplate.opsForZSet().reverseRange(key, start, end); // reverseRange => mới nhất trước
+    // phân trang bằng PageableRequest
+    public <T> List<T> getIdsFromZSet(String key, int page, int size, Function<String, T> mapper) {
+        long start = (long) page * size;
+        long end = start + size - 1;
 
-        if (raw == null) return List.of();
-
-        return raw.stream()
-                .filter(Objects::nonNull)
-                .map(Object::toString)
-                .map(json -> JSONUtil.fromJson(json, clazz))
-                .toList();
-    }
-
-    public <T> List<T> getKeysFromZSet(String key, long start, long end, Function<String, T> mapper) {
         Set<Object> raw = redisTemplate.opsForZSet().reverseRange(key, start, end);
         if (raw == null) return List.of();
 
         return raw.stream()
                 .filter(Objects::nonNull)
-                .map(obj -> mapper.apply(obj.toString())) // co the dung ví du:  UUID::fromString
+                .map(Object::toString)
+                .map(mapper) // ví dụ Long::valueOf hoặc UUID::fromString
                 .toList();
     }
+
+    @Async
+    public void removeFromZSet(String key, Object id) {
+        if (id != null) {
+            redisTemplate.opsForZSet().remove(key, id.toString());
+        }
+    }
+
+    /**
+     * -------------------- MultiGet --------------------
+     */
 
     public <T> List<T> multiGetFromRedis(List<String> keys, Class<T> clazz) {
         if (keys == null || keys.isEmpty()) return List.of();
@@ -85,22 +93,13 @@ public class RedisUtil {
                 .toList();
     }
 
-    public List<Object> multiGetFromRedis(List<String> keys) {
-        if (keys == null || keys.isEmpty()) return List.of();
-
-        List<Object> rawList = redisTemplate.opsForValue().multiGet(keys);
-
-        return rawList == null ? List.of() : rawList;
-    }
+    /**
+     * -------------------- Delete --------------------
+     */
 
     @Async
     public void deleteDataFromRedis(String key) {
         redisTemplate.delete(key);
-    }
-
-    @Async
-    public void removeFromZSet(String key, Object value) {
-        redisTemplate.opsForZSet().remove(key, JSONUtil.toJson(value));
     }
 
 }

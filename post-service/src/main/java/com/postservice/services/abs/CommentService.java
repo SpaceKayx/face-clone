@@ -1,5 +1,6 @@
 package com.postservice.services.abs;
 
+import com.core.dto.response.PageableRequest;
 import com.postservice.dto.request.CommentRequest;
 import com.postservice.dto.response.CommentResponse;
 import com.postservice.entities.Comment;
@@ -16,6 +17,8 @@ public interface CommentService {
 
     Comment updateComment(long id, CommentRequest request);
 
-    Map<UUID, List<CommentResponse>> getCommentsByPostIds(List<UUID> postIds);
+    Map<UUID, List<CommentResponse>> getCommentsByPostIds(List<UUID> postIds, PageableRequest request);
+
+    List<CommentResponse> getCommentChildrenByParentId(long parentId, PageableRequest request);
 
 }

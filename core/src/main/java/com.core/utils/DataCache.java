@@ -24,4 +24,12 @@ public class DataCache {
         return String.format(FConstants.TOPIC_POST_OF_USER_CACHE_KEY, userId);
     }
 
+    public static String getPostHasCommentParentKeyInRedis(UUID postId) {
+        return String.format(FConstants.TOPIC_POST_HAS_PARENT_COMMENT_CACHE_KEY, postId);
+    }
+
+    public static String getPostHasCommentChildrenKeyInRedis(long parentId) {
+        return String.format(FConstants.TOPIC_POST_HAS_CHILDREN_COMMENT_CACHE_KEY, parentId);
+    }
+
 }

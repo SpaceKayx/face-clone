@@ -1,6 +1,7 @@
 package com.postservice.controllers;
 
 import com.core.dto.response.DataResponse;
+import com.core.dto.response.PageableRequest;
 import com.core.utils.HttpServletRequestUtil;
 import com.postservice.dto.request.CommentRequest;
 import com.postservice.services.abs.CommentService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -49,9 +51,9 @@ public class CommentController {
     }
 
     @GetMapping("/more-comment/{postId}")
-    public DataResponse moreComment(@PathVariable UUID postId) {
+    public DataResponse moreComment(@PathVariable UUID postId, @RequestParam PageableRequest request) {
         return new DataResponse(
-                commentService.getCommentsByPostIds(List.of(postId))
+                commentService.getCommentsByPostIds(List.of(postId), request)
                         .get(postId));
     }
 

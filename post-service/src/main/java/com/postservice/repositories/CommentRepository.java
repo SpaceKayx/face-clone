@@ -28,8 +28,19 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             FROM Comment c
             INNER JOIN UserCache u
                 ON c.userId = u.id
-            WHERE c.postId IN :postIds
+            WHERE c.postId = :postIds
+            AND c.parentId = 0
             """)
-    List<CommentResponse> findAllCommentByPostIds(List<UUID> postIds, Pageable pageable);
+    List<CommentResponse> findParentCommentByPostIds(UUID postIds, Pageable pageable);
+
+    @Query("""
+            SELECT new com.postservice.dto.response.CommentResponse(c.id, c.parentId, c.replyUserId, c.content,u.id, u.firstName, u.lastName)
+            FROM Comment c
+            INNER JOIN UserCache u
+                ON c.userId = u.id
+            WHERE c.parentId <> 0
+            AND c.parentId = :parentId
+            """)
+    List<CommentResponse> findChildrenByParentId(long parentId, Pageable pageable);
 
 }

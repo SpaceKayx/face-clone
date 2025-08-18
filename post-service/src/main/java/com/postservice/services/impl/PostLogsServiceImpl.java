@@ -21,6 +21,7 @@ import com.postservice.services.abs.UserCacheService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -46,7 +47,7 @@ public class PostLogsServiceImpl implements PostLogsService {
         entity = postLogsRepository.save(entity);
 
         redisUtil.setDataToRedis(getKeyInRedis(entity.getId()), entity);
-        redisUtil.setDataToRedisWithRealTime(DataCache.getPostOfUserKeyInRedis(userId), entity.getId());
+        redisUtil.addToZSet(DataCache.getPostOfUserKeyInRedis(userId), entity.getId());
 
         return entity;
     }
@@ -88,8 +89,12 @@ public class PostLogsServiceImpl implements PostLogsService {
             response.setUsername(user.getUsername());
         }
 
-        response.setComments(commentsService.getCommentsByPostIds(List.of(id)).getOrDefault(id, Collections.emptyList()));
-        response.setEmojis(emojiService.findAllByPostIds(List.of(id)).getOrDefault(id, Collections.emptyList()));
+        response.setComments(commentsService.getCommentsByPostIds(
+                        List.of(id),
+                        new PageableRequest(0, 50, "createTime", Sort.Direction.DESC))
+                .getOrDefault(id, Collections.emptyList()));
+        response.setEmojis(emojiService.findAllByPostIds(List.of(id))
+                .getOrDefault(id, Collections.emptyList()));
 
         return response;
     }
@@ -105,7 +110,7 @@ public class PostLogsServiceImpl implements PostLogsService {
         if (user == null) return Collections.emptyList();
 
         List<PostLogsResponse> responses;
-        List<UUID> postIds = redisUtil.getKeysFromZSet(
+        List<UUID> postIds = redisUtil.getIdsFromZSet(
                 DataCache.getPostOfUserKeyInRedis(userId),
                 request.getPage(),
                 request.getSize(),
@@ -122,7 +127,7 @@ public class PostLogsServiceImpl implements PostLogsService {
 
         if (responses.isEmpty()) return responses;
 
-        Map<UUID, List<CommentResponse>> commentMap = commentsService.getCommentsByPostIds(postIds);
+        Map<UUID, List<CommentResponse>> commentMap = commentsService.getCommentsByPostIds(postIds, new PageableRequest());
         Map<UUID, List<EmojiResponse>> emojiMap = emojiService.findAllByPostIds(postIds);
 
         for (PostLogsResponse post : responses) {
