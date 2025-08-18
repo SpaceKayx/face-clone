@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,16 +31,13 @@ public class PostLogsController {
 
     @PutMapping("/{id}")
     public DataResponse updatePost(@PathVariable UUID id, @RequestBody PostLogsRequest request) {
-
         return new DataResponse(postLogsService.updatePost(id, request));
     }
 
     @DeleteMapping("/{id}")
     public DataResponse deletePost(@PathVariable UUID id) {
         postLogsService.deletePost(id);
-        return DataResponse.builder()
-                .message("Xóa thành công!")
-                .build();
+        return new DataResponse("Xóa thành công!");
     }
 
     @GetMapping("/{id}")
@@ -53,12 +49,10 @@ public class PostLogsController {
     public List<PostLogs> getAllPosts() {
         return postLogsService.getAllPosts();
     }
-    
+
     @GetMapping("/user/{userId}")
     public DataResponse getAllPostsByUserId(@PathVariable UUID userId, @RequestParam PageableRequest request) {
-        List<PostLogsResponse> posts = postLogsService.findAllByUserId(userId, request);
-
-        return new DataResponse(posts != null ? posts : new ArrayList<>());
+        return new DataResponse(postLogsService.findAllByUserId(userId, request));
     }
 
 }
